@@ -1,0 +1,80 @@
+package com.test.kafka;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.json.simple.JSONValue;
+
+public class SimpleProducer {
+	
+	public static void main(String[] args) throws InterruptedException {
+		simpleProducer();
+	}
+	
+	public static void simpleProducer() throws InterruptedException {
+
+		Properties props = new Properties();
+		/**
+		 * The bootstrap server are nothing but the our kafaka brokers. 
+		 * recomended to place the atleast 2 brokers.
+		 * 
+		 */
+		
+		 props.put("bootstrap.servers", "localhost:9092"); 
+		/* props.put("acks", "all");
+		 props.put("delivery.timeout.ms", 30000);
+		 props.put("batch.size", 16384);
+		 props.put("linger.ms", 1);
+		 props.put("buffer.memory", 33554432);*/
+		 props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+		 props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+		 Producer<String, String> producer = new KafkaProducer<>(props);
+		 for (int i = 0; i < 100; i++){		
+			 
+			 String userJson = getJsonString(i);
+			 
+			 if(i == 0)
+				 Thread.sleep(60000);
+			 
+			 producer.send(new ProducerRecord<String, String>("kafka_spark", Integer.toString(i), Integer.toString(i)));
+			 Thread.sleep(10000);
+		 }
+		     
+
+		 producer.close();
+
+	}
+
+	public static String getJsonString(int i) {
+		
+	/*	JSONObject obj=new JSONObject();    
+		  obj.put("name","sonoo");    
+		  obj.put("age",new Integer(27));    
+		  obj.put("salary",new Double(600000));   
+		  String jsonText = JSONValue.toJSONString(obj);  */
+		
+		int useID = getUserId(i);
+		
+		Map<String,Object> obj=new HashMap<String,Object>();    
+		  obj.put("userId",useID);    
+		  obj.put("location","hyd");    
+		  obj.put("source","sdk");   
+		  String jsonText = JSONValue.toJSONString(obj);  
+		  
+		 
+		return jsonText;
+	}
+
+	private static int getUserId(int i) {
+		
+		return i%10;
+	}
+	
+	
+
+}
